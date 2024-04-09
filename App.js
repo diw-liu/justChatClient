@@ -5,6 +5,8 @@ import { Amplify } from 'aws-amplify';
 import { signIn } from 'aws-amplify/auth';
 import { Authenticator } from '@aws-amplify/ui-react-native';
 import { BackendStack } from './output/cdk-exports.json'
+import { store } from './src/redux/store';
+import { Provider } from 'react-redux';
 
 Amplify.configure({
   Auth: {
@@ -33,7 +35,8 @@ const App = () => {
     })
   }
   return (
-    <Authenticator.Provider>
+    <Provider store={store}>
+      <Authenticator.Provider>
       <Authenticator 
         services={{
           handleSignIn: async ({username, password}) => {
@@ -44,7 +47,8 @@ const App = () => {
             <TabNavigator/>
           </NavigationContainer>
       </Authenticator>
-    </Authenticator.Provider>
+      </Authenticator.Provider>
+    </Provider>
   );
 };
 

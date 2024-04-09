@@ -1,9 +1,14 @@
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MessageScreen from './MessageScreen';
 import ProfileScreen from './ProfileScreen';
 import FriendRequestScreen from './FriendRequestScreen';
+
+import { fetchFriends } from '../src/redux/friendsReducer';
+import { AppDispatch } from '../src/redux/store';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -18,6 +23,13 @@ const StackNavigator = () => {
 }
 
 export const TabNavigator = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchFriends());
+  }, [dispatch]);
+
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

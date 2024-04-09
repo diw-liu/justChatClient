@@ -8,14 +8,10 @@ export const getUser = `query GetUser($email: String!) {
 
 export const getFriends = `query GetFriends {
   getFriends {
-    UserId
     FriendId
     Status
     RoomId
-    CreatedTime
-    UpdatedTime
     FriendInfo {
-      UserId
       UserName
       Email
     }

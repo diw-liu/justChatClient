@@ -8,7 +8,7 @@ const friendRequests = [
 ];
 
 interface FriendRequestItem {
-  name:String
+  name: String
   onAccept: () => void
   onDeny: () => void
 }
