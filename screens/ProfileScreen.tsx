@@ -5,10 +5,13 @@ import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 
 
 const ProfileScreen: React.FC = () => {
-  const { signOut } = useAuthenticator();
+  const { user, signOut } = useAuthenticator();
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Profile Screen</Text>
+      <Text> {user.userId} </Text>
+      <Text> {user.username} </Text>
       <Button title="Sign Out" onPress={signOut} />
     </View>
   );

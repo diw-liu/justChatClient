@@ -24,5 +24,16 @@ export const sendMessage = `mutation SendMessage($RoomId: String!, $Message: Str
 }`;
 
 export const requestFriend = `mutation RequestFriend($friendId: String!, $type: RequestType!) {
-  requestFriend(friendId: $friendId, type: $type)
+  requestFriend(friendId: $friendId, type: $type) {
+    Friend {
+      FriendId
+      CreatedTime
+      RoomId
+      FriendInfo {
+        Email
+        UserName
+      }
+    }
+    Status
+  }
 }`;

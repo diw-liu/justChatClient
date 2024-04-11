@@ -4,13 +4,32 @@ export interface User {
 }
 
 export interface UserInfo {
-  UserName: String,
-  Email: String
+  UserName: string,
+  Email: string
 }
 
-export interface Friends {
-  FriendId: String,
-  Status: String,
-  RoomId: String,
-  FriendInfo: UserInfo
+export interface Message {
+  MessageId: string,
+  AuthorId: string,
+  Content: string,
+  CreatedTime: string
+}
+
+export interface MessageConnection {
+  items: [Message],
+  nextToken: string
+}
+
+export interface Friend {
+  FriendId: string,
+  CreatedTime: string,
+  RoomId: string,
+  Status: string,
+  FriendInfo: UserInfo,
+  Messages: MessageConnection
+}
+
+export interface FriendsResponse {
+  Friend: Friend,
+  Status: String
 }

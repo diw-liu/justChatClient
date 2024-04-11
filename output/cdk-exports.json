@@ -2,6 +2,6 @@
   "BackendStack": {
     "ChatsUserpool": "us-east-1_JOpji9ctU",
     "ChatsAppSync": "https://6x2rynxrjnaavgafvsymw3tiym.appsync-api.us-east-1.amazonaws.com/graphql",
-    "ChatsClient": "62m2tp3s54h0lquvt5pjp3a437"
+    "ChatsClient": "32lmc9pppa53jv3kqu1q3lg1t"
   }
 }

@@ -1,21 +1,22 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-
-const friendRequests = [
-  { id: '1', name: 'John Doe' },
-  { id: '2', name: 'Jane Smith' },
-];
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../src/redux/store';
+import { FriendService } from '../src/service/FriendService';
+import { friendSlice } from '../src/redux/friendsReducer';
 
 interface FriendRequestItem {
-  name: String
+  email: string
+  name: string
   onAccept: () => void
   onDeny: () => void
 }
 
-const FriendRequestItem: React.FC<FriendRequestItem> = ({ name, onAccept, onDeny }) => (
+const FriendRequestItem: React.FC<FriendRequestItem> = ({ name, email, onAccept, onDeny }) => (
   <View style={styles.requestItem}>
     <Text style={styles.requestText}>{name}</Text>
+    <Text style={styles.requestText}>{email}</Text>
     <View style={styles.buttonsContainer}>
       <TouchableOpacity onPress={onAccept} style={styles.button}>
         <AntDesign name="checksquare" size={24} color="green" />
@@ -28,25 +29,40 @@ const FriendRequestItem: React.FC<FriendRequestItem> = ({ name, onAccept, onDeny
 );
 
 const FriendRequestScreen: React.FC = () => {
-  const handleAccept = (id) => {
+  const requests = useSelector((state: RootState) => state.friends.requests);
+  const dispatch = useDispatch();
+  
+  const handleAccept = async (id) => {
     console.log('Accepted request:', id);
-    // Handle accept action here (e.g., update state or send a request to your backend)
+    dispatch(friendSlice.actions.setLoading());
+    const result = await FriendService.approveFriend(id);
+    if(result['Status'] == "200") {
+      dispatch(friendSlice.actions.addFriend(result['Friend']))
+      dispatch(friendSlice.actions.removeRequest(id))
+    }
+    dispatch(friendSlice.actions.setIdle());
   };
 
-  const handleDeny = (id) => {
+  const handleDeny = async (id) => {
     console.log('Denied request:', id);
-    // Handle deny action here
+    dispatch(friendSlice.actions.setLoading());
+    const result = await FriendService.disapproveFriend(id);
+    if(result['Status'] == "200") {
+      dispatch(friendSlice.actions.removeRequest(id));
+    }
+    dispatch(friendSlice.actions.setIdle());
   };
 
   return (
     <FlatList
-      data={friendRequests}
-      keyExtractor={(item) => item.id}
+      data={Object.values(requests)}
+      keyExtractor={(item) => item.FriendId}
       renderItem={({ item }) => (
         <FriendRequestItem
-          name={item.name}
-          onAccept={() => handleAccept(item.id)}
-          onDeny={() => handleDeny(item.id)}
+          name={item.FriendInfo.UserName}
+          email={item.FriendInfo.Email}
+          onAccept={() => handleAccept(item.FriendId)}
+          onDeny={() => handleDeny(item.FriendId)}
         />
       )}
     />

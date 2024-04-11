@@ -26,22 +26,30 @@ Amplify.configure({
 
 const App = () => {
   const signInHandler = async(username, password) => {
-    return signIn({
-      username: username,
-      password: password,
-      options: {
-        authFlowType: "USER_PASSWORD_AUTH",
-      }
-    })
+    try {
+      return signIn({
+        username: username,
+        password: password,
+        options: {
+          authFlowType: "USER_PASSWORD_AUTH",
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
   return (
     <Provider store={store}>
       <Authenticator.Provider>
-      <Authenticator 
+      <Authenticator
+        signUpAttributes={["email"]}
         services={{
           handleSignIn: async ({username, password}) => {
             return signInHandler(username, password)
-          }
+          },
+          handleConfirmSignUp: async ({username, password}) => {
+            return signInHandler(username, password)
+          } 
         }}>
           <NavigationContainer>
             <TabNavigator/>

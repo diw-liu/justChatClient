@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, SafeAreaView, TextInput, StyleSheet, Text} from 'react-native';
+import { View, TouchableOpacity, TextInput, StyleSheet, Text, FlatList} from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { UserModal } from '../src/supplement/UserModal';
+import { useSelector } from 'react-redux';
+import { RootState } from '../src/redux/store';
+
+interface MessageItem {
+  id: string
+  email: string
+  name: string
+  navigation: any
+}
+
+const MessageItem: React.FC<MessageItem> = ({ id, name, email, navigation }) => (
+  <TouchableOpacity onPress={() => navigation.navigate('MessageRoom', { id: id, name: name })}>
+    <Text >{name}</Text>
+    <Text >{email}</Text>
+  </TouchableOpacity>
+);
 
 const MessageScreen: React.FC = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+
+  const friends = useSelector((state: RootState) => state.friends.friends);
 
   return (
     <View>
@@ -16,7 +34,6 @@ const MessageScreen: React.FC = ({ navigation }) => {
           value={query}
           onChangeText={text => {
             setQuery(text);
-            
           }}
         />
         <TouchableOpacity style={styles.buttonContainer} onPress={() => setModalVisible(true)}>
@@ -30,6 +47,18 @@ const MessageScreen: React.FC = ({ navigation }) => {
           <Text style={styles.text}>Friend Request</Text>
           <MaterialIcons name="arrow-forward-ios" size={20} color="black" />
       </TouchableOpacity>
+      <FlatList
+        data={Object.values(friends)}
+        keyExtractor={(item) => item.FriendId}
+        renderItem={({ item }) => (
+          <MessageItem
+            id={item.FriendId}
+            name={item.FriendInfo.UserName}
+            email={item.FriendInfo.Email}
+            navigation={navigation}
+          />
+        )}
+      />
       <UserModal modalVisible={modalVisible} setModalVisible={setModalVisible}/>
     </View>
   );

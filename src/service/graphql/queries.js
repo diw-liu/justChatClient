@@ -15,6 +15,15 @@ export const getFriends = `query GetFriends {
       UserName
       Email
     }
+    Messages {
+      items {
+        MessageId
+        AuthorId
+        Content
+        CreatedTime
+      }
+      nextToken
+    }
   }
 }`;
 

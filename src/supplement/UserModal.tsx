@@ -16,29 +16,27 @@ interface UserInfo {
 }
 
 export const UserModal: React.FC<UserModalProps> = ({ modalVisible, setModalVisible }) => {
-  const [userInfo, setUserInfo] = useState<UserInfo | null | undefined>(undefined);
+  const [userInfo, setUserInfo] = useState<UserInfo | null | undefined>(null);
   
   const handleFetchUser = async (email: string) => {
     const user = await FriendService.fetchUser(email)
     setUserInfo(user)
-    console.log(user)
   }
 
   const handleAddFriend = async () => {
-    console.log('dadsdads');
     const result = await FriendService.addFriend(userInfo['UserId'])
-    if(result == "200") {
+    if(result['Status'] == "200") {
       setModalVisible(!modalVisible);
-      setUserInfo(undefined) 
-    } else {
       setUserInfo(null) 
+    } else {
+      setUserInfo(undefined) 
     }
     console.log(result)
   }
 
   const closeModal = () => {
     setModalVisible(!modalVisible);
-    setUserInfo(undefined)
+    setUserInfo(null)
   }
 
   return (
@@ -71,7 +69,7 @@ export const UserModal: React.FC<UserModalProps> = ({ modalVisible, setModalVisi
                           </TouchableOpacity>
                         </View>
                       ) : (
-                        userInfo !== undefined && <Text>Invalid Email or Please try again later</Text>
+                        userInfo === undefined && <Text>Invalid Email or Please try again later</Text>
                       )}
           </View>
         </View>
