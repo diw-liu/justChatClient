@@ -136,12 +136,7 @@ export const friendSlice = createSlice({
     updateMessage: (state, action: PayloadAction<{roomId: string, result: MessageConnection}>) => {
       const {roomId, result} = action.payload;
       state.rooms[roomId].items = [...result.items.reverse(), ...state.rooms[roomId].items, ];
-      state.rooms[roomId].items.forEach(element => {
-        console.log('okay')
-        console.log(element)
-      });
       state.rooms[roomId].nextToken = result.nextToken;
-      console.log(state.rooms[roomId])
     }
   }
 })

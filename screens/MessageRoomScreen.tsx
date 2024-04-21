@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../src/redux/store";
 import { useAuthenticator } from "@aws-amplify/ui-react-native";
 import { MessageService } from "../src/service/MessageService";
-import { Message, MessageInfo } from "../src/interface";
+import { Message } from "../src/interface";
 import { friendSlice } from "../src/redux/friendsReducer";
 
 const MessageItem = ({ text, isSystemMessage, isOwnMessage}) => {
@@ -34,34 +34,40 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
     })
   })
 
-  useEffect(() => {
-    autoScrollToBottom();
-    const unsubscribe = navigation.addListener('focus', autoScrollToBottom);
-    return unsubscribe;
-  }, [navigation]);
-
-  useEffect(() => {
-    autoScrollToBottom();
-  }, [room.items]);
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     autoScrollToBottom();
+  //   });
+  //   return unsubscribe;
+  // }, [navigation]);
     
+  useEffect(() => {
+    autoScrollToBottom();
+  }, [room.items]); 
+
   const autoScrollToBottom = () => {
-    setTimeout(() => {
-      if (flatListRef.current) {
-        flatListRef.current.scrollToEnd({ animated: true });
-      }
-    }, 100);
+    console.log("Scrolling to bottom...");
+    if (flatListRef.current && !refreshing && room.items.length > 0) {
+      setTimeout(() => {
+        flatListRef.current.scrollToIndex({
+          index: room.items.length - 1,
+          animated: true
+        });
+      }, 500);
+    }
   }
 
-  // useEffect(() => {
-  //   const showSubscription = Keyboard.addListener("keyboardDidShow", autoScrollToBottom);
-  //   const hideSubscription = Keyboard.addListener("keyboardDidHide", autoScrollToBottom);
-  //   return () => {
-  //     showSubscription.remove();
-  //     hideSubscription.remove();
-  //   };
-  // }, []);
-
-
+  const onScrollToIndexFailed = (error) => {
+    const index = error.index;
+    const offset = error.averageItemLength * index;
+    flatListRef.current.scrollToOffset({ offset });
+    setTimeout(() => {
+      if (room.items.length > index) {
+        flatListRef.current.scrollToIndex({ index, animated: true });
+      }
+    }, 100);
+  };
+  
   const sendMessage = async () => {
     if(!messageText) return;
     const result = await MessageService.sendMessage(roomId, messageText);
@@ -78,13 +84,14 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
 
   const fetchMessages = async () => {
     setRefreshing(true);
-    console.log('room')
-    console.log(room)
-    if(room.nextToken){
-      const result = await MessageService.fetchMessage(roomId, room.nextToken)
-      dispatch(friendSlice.actions.updateMessage({roomId, result}))
+    try {
+      if(room.nextToken){
+        const result = await MessageService.fetchMessage(roomId, room.nextToken)
+        dispatch(friendSlice.actions.updateMessage({roomId, result}))
+      }
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   }
 
   return (
@@ -97,6 +104,7 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
       <FlatList
         ref={flatListRef}
         data={room.items}
+        extraData={room.items.length}
         keyExtractor={(item) => item.MessageId}
         renderItem={({ item }) => (
           <MessageItem
@@ -105,6 +113,7 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
             isOwnMessage={item.AuthorId === user.userId}
           />
         )}
+        onScrollToIndexFailed={onScrollToIndexFailed}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
@@ -121,6 +130,7 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
           value={messageText}
           onChangeText={setMessageText}
           placeholder="Type a message..."
+          onFocus={autoScrollToBottom}
         />
         <Button title="Send" onPress={sendMessage} />
       </View>
