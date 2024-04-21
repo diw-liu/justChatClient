@@ -8,16 +8,24 @@ export interface UserInfo {
   Email: string
 }
 
-export interface Message {
+export interface MessageInfo {
   MessageId: string,
   AuthorId: string,
   Content: string,
   CreatedTime: string
 }
 
+export interface Message {
+  MessageId: string,
+  AuthorId: string,
+  Content: string,
+  CreatedTime: string,
+  successful?: boolean 
+}
+
 export interface MessageConnection {
   items: [Message],
-  nextToken: string
+  nextToken?: string
 }
 
 export interface Friend {

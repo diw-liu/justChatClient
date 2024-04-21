@@ -1,12 +1,15 @@
-import { useLayoutEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, TextInput, Button, KeyboardAvoidingView, Platform, SafeAreaView } from "react-native";
-import { useSelector } from "react-redux";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, FlatList, TextInput, Button, KeyboardAvoidingView, Platform, SafeAreaView, RefreshControl, Keyboard, ActivityIndicator } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../src/redux/store";
 import { useAuthenticator } from "@aws-amplify/ui-react-native";
+import { MessageService } from "../src/service/MessageService";
+import { Message, MessageInfo } from "../src/interface";
+import { friendSlice } from "../src/redux/friendsReducer";
 
-const MessageItem = ({ text, isSent }) => {
-  const messageStyle = isSent ? styles.sentMessage : styles.receivedMessage;
-  const textStyle = isSent ? styles.sentText : styles.receivedText;
+const MessageItem = ({ text, isSystemMessage, isOwnMessage}) => {
+  const messageStyle = isSystemMessage ? styles.systemMessage : (isOwnMessage ? styles.sentMessage : styles.receivedMessage);
+  const textStyle = isSystemMessage ? styles.systemText : styles.messageText;
 
   return (
     <View style={[styles.message, messageStyle]}>
@@ -16,10 +19,13 @@ const MessageItem = ({ text, isSent }) => {
 };
 
 const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
-  const { id, name } = route.params;
-  const { user } = useAuthenticator(); 
+  const { roomId, name } = route.params;
+  const { user } = useAuthenticator();
+  const dispatch = useDispatch();
+  const room = useSelector((state: RootState) => state.friends.rooms[roomId])
+  const flatListRef = useRef(null);
   const [messageText, setMessageText] = useState('');
-  const friend = useSelector((state: RootState) => state.friends.friends[id])
+  const [refreshing, setRefreshing] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -28,10 +34,58 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
     })
   })
 
-  const sendMessage = () => {
-    console.log(messageText);
+  useEffect(() => {
+    autoScrollToBottom();
+    const unsubscribe = navigation.addListener('focus', autoScrollToBottom);
+    return unsubscribe;
+  }, [navigation]);
+
+  useEffect(() => {
+    autoScrollToBottom();
+  }, [room.items]);
+    
+  const autoScrollToBottom = () => {
+    setTimeout(() => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }
+    }, 100);
+  }
+
+  // useEffect(() => {
+  //   const showSubscription = Keyboard.addListener("keyboardDidShow", autoScrollToBottom);
+  //   const hideSubscription = Keyboard.addListener("keyboardDidHide", autoScrollToBottom);
+  //   return () => {
+  //     showSubscription.remove();
+  //     hideSubscription.remove();
+  //   };
+  // }, []);
+
+
+  const sendMessage = async () => {
+    if(!messageText) return;
+    const result = await MessageService.sendMessage(roomId, messageText);
+    const message: Message = {
+      MessageId: result,
+      AuthorId: user.userId,
+      Content: messageText,
+      CreatedTime: new Date().toISOString(),
+      successful: false
+    }
+    dispatch(friendSlice.actions.addMessage({roomId, message}))
     setMessageText('');
   };
+
+  const fetchMessages = async () => {
+    setRefreshing(true);
+    console.log('room')
+    console.log(room)
+    if(room.nextToken){
+      const result = await MessageService.fetchMessage(roomId, room.nextToken)
+      dispatch(friendSlice.actions.updateMessage({roomId, result}))
+    }
+    setRefreshing(false);
+  }
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -41,15 +95,25 @@ const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
       >
       <FlatList
-        data={friend.Messages.items}
+        ref={flatListRef}
+        data={room.items}
         keyExtractor={(item) => item.MessageId}
         renderItem={({ item }) => (
           <MessageItem
             text={item.Content}
-            isSent={item.AuthorId === user.userId}
+            isSystemMessage={item.AuthorId === '0'}
+            isOwnMessage={item.AuthorId === user.userId}
           />
         )}
-        inverted
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchMessages}
+            colors={['#9Bd35A', '#689F38']}
+            tintColor="#689F38"
+          />
+        }
       />
       <View style={styles.inputContainer}>
         <TextInput
@@ -85,8 +149,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#fff', // Ensure the input field is clearly visible
   },
-  messageText: {
-    fontSize: 16,
+  message: {
+    maxWidth: '80%',
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 20,
   },
   sentMessage: {
     backgroundColor: '#DCF8C6', // Light green, typical for sent messages
@@ -94,22 +161,33 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   receivedMessage: {
-    backgroundColor: '#ECECEC', // Light grey, for received messages
+    backgroundColor: '#ECECEC', // Light grey, typical for received messages
     alignSelf: 'flex-start',
     marginLeft: 10,
   },
-  sentText: {
+  systemMessage: {
+    backgroundColor: 'transparent', // Make system message background transparent
+    alignSelf: 'center',
+    marginHorizontal: 'auto', // Center the system message horizontally
+    padding: 0, // Optional: Reduce padding for system messages
+  },
+  messageText: {
     color: 'black',
   },
-  receivedText: {
-    color: 'black',
+  systemText: {
+    color: '#666', // Change the text color to make it less prominent or adjust as needed
+    fontWeight: 'bold',
+    fontStyle: 'italic', // Make system messages italic to differentiate them
   },
-  message: {
-    maxWidth: '70%',
+  listContainer: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  loader: {
     padding: 10,
-    marginVertical: 5,
-    borderRadius: 20,
-  },
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
 
 export default MessageRoomScreen

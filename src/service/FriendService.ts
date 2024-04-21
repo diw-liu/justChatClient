@@ -13,7 +13,7 @@ export class FriendService {
         query: getUser,
         variables: { email: email}
       });
-      console.log(result)
+      //console.log(result)
       return result?.data.getUser[0] as User;
     } catch (err) {
       console.log('error fetching users', err);
@@ -26,7 +26,7 @@ export class FriendService {
       const result = await FriendService.client.graphql({
         query: getFriends
       })
-      console.log(result?.data.getFriends)
+      //console.log(result?.data.getFriends)
       return result?.data.getFriends as Friend[];
     } catch (err) {
       console.log('error fetching users', err);
@@ -35,14 +35,17 @@ export class FriendService {
   }
 
   public static subscribeRequest = async (userId: string) => {
-    console.log("Dasdadassad")
     FriendService
       .client
       .graphql({
         query: onPublishFriend,
-        variables: {UserId: userId}})
+        variables: {UserId: userId}
+      })
       .subscribe({
-        next: ({ data }) => console.log(data),
+        next: ({ data }) => {
+          console.log(data)
+          return data
+        },
         error: (error) => console.warn(error)
       });
   }

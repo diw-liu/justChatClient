@@ -46,10 +46,7 @@ const App = () => {
         services={{
           handleSignIn: async ({username, password}) => {
             return signInHandler(username, password)
-          },
-          handleConfirmSignUp: async ({username, password}) => {
-            return signInHandler(username, password)
-          } 
+          }
         }}>
           <NavigationContainer>
             <TabNavigator/>

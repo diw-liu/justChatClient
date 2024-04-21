@@ -1,4 +1,4 @@
-export const onPublishMessage = `subscription OnPublishMessage($RoomId: String!) {
+export const onPublishMessage = `subscription OnPublishMessage($RoomId: [String!]) {
   onPublishMessage(RoomId: $RoomId) {
     RoomId
     MessageId

@@ -7,13 +7,17 @@ import { RootState } from '../src/redux/store';
 
 interface MessageItem {
   id: string
+  roomId: string
   email: string
   name: string
   navigation: any
 }
 
-const MessageItem: React.FC<MessageItem> = ({ id, name, email, navigation }) => (
-  <TouchableOpacity onPress={() => navigation.navigate('MessageRoom', { id: id, name: name })}>
+const MessageItem: React.FC<MessageItem> = ({ id, roomId, name, email, navigation }) => (
+  <TouchableOpacity 
+    onPress={() => navigation.navigate('MessageRoom', { id: id, roomId: roomId, name: name })}
+    style={styles.messageItemContainer}
+  >  
     <Text >{name}</Text>
     <Text >{email}</Text>
   </TouchableOpacity>
@@ -53,6 +57,7 @@ const MessageScreen: React.FC = ({ navigation }) => {
         renderItem={({ item }) => (
           <MessageItem
             id={item.FriendId}
+            roomId = {item.RoomId}
             name={item.FriendInfo.UserName}
             email={item.FriendInfo.Email}
             navigation={navigation}
@@ -102,6 +107,21 @@ const styles = StyleSheet.create({
   text: {
     marginRight: 10,
     fontSize: 16,
+  },
+  messageItemContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 5,
+    marginHorizontal: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 
