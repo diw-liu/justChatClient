@@ -7,6 +7,21 @@ import { MessageService } from "../src/service/MessageService";
 import { Message } from "../src/interface";
 import { friendSlice } from "../src/redux/friendsReducer";
 
+const CustomHeaderTitle = ({ name, isOnline }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{
+      height: 10,
+      width: 10,
+      borderRadius: 5,
+      backgroundColor: isOnline === 'online' ? 'green' : 'transparent',
+      borderWidth: isOnline === 'online' ? 0 : 1,
+      borderColor: isOnline === 'online' ? 'green' : 'grey',
+      marginRight: 10
+    }} />
+    <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{name}</Text>
+  </View>
+);
+
 const MessageItem = ({ text, isSystemMessage, isOwnMessage}) => {
   const messageStyle = isSystemMessage ? styles.systemMessage : (isOwnMessage ? styles.sentMessage : styles.receivedMessage);
   const textStyle = isSystemMessage ? styles.systemText : styles.messageText;
@@ -19,34 +34,29 @@ const MessageItem = ({ text, isSystemMessage, isOwnMessage}) => {
 };
 
 const MessageRoomScreen: React.FC<any> = ({ route, navigation }) => {
-  const { roomId, name } = route.params;
+  const { id, roomId, name, isOnline } = route.params;
   const { user } = useAuthenticator();
   const dispatch = useDispatch();
+  const friend = useSelector((state: RootState) => state.friends.friends[id])
   const room = useSelector((state: RootState) => state.friends.rooms[roomId])
   const flatListRef = useRef(null);
   const [messageText, setMessageText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   useLayoutEffect(() => {
+    //console.log('inisss')
     navigation.setOptions({
-      title: name ? name: "MessageRoom",
+      headerTitle: () => <CustomHeaderTitle name={name} isOnline={friend.isOnline.status} />,
       headerBackTitleVisible: false, 
     })
-  })
-
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('focus', () => {
-  //     autoScrollToBottom();
-  //   });
-  //   return unsubscribe;
-  // }, [navigation]);
+  }, [navigation, friend.isOnline.status])
     
   useEffect(() => {
     autoScrollToBottom();
   }, [room.items]); 
 
   const autoScrollToBottom = () => {
-    console.log("Scrolling to bottom...");
+    //console.log("Scrolling to bottom...");
     if (flatListRef.current && !refreshing && room.items.length > 0) {
       setTimeout(() => {
         flatListRef.current.scrollToIndex({

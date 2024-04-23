@@ -1,24 +1,12 @@
+import { useDispatch } from 'react-redux';
 import { generateClient } from 'aws-amplify/api';
 import { sendMessage } from './graphql/mutation';
-import { onPublishMessage } from './graphql/subscriptions'
 import { getMessage } from './graphql/queries';
 import { MessageConnection } from '../interface';
+
 export class MessageService {
   private static client = generateClient();
   private static regex = /MessageId=([-\w]+)/;
-
-  public static subscribeMessage = async (roomId: string[]) => {
-    MessageService
-      .client
-      .graphql({
-        query: onPublishMessage,
-        variables: {RoomId: roomId}
-      })
-      .subscribe({
-        next: ({ data }) => console.log(data),
-        error: (error) => console.warn(error)
-      })
-  }
 
   public static sendMessage = async (roomId: string, message: string) : Promise<string | undefined>=> {
     try {
@@ -29,7 +17,7 @@ export class MessageService {
       const messageId = result?.data.sendMessage.match(MessageService.regex)[1];
       return messageId
     } catch (err) {
-      console.log('sendMessage err'+ err)
+      //console.log('sendMessage err'+ err)
       return undefined
     }
   }
@@ -42,10 +30,10 @@ export class MessageService {
         query: getMessage,
         variables: variables
       })
-      console.log(result?.data)
+      //console.log(result?.data)
       return result?.data.getMessage as MessageConnection
     } catch (err) {
-      console.log('fetchMessage err'+ JSON.stringify(err))
+      //console.log('fetchMessage err'+ JSON.stringify(err))
       return undefined
     }
   }

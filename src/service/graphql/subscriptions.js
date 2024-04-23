@@ -21,8 +21,8 @@ export const onPublishFriend = `subscription OnPublishFriend($UserId: String!) {
   }
 }`;
 
-export const onStatus = `subscription OnStatus($id: ID!) {
-  onStatus(id: $id) {
+export const onPublishStatus = `subscription onPublishStatus($id: [ID!]) {
+  onPublishStatus(id: $id) {
     id
     status
   }

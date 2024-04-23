@@ -31,7 +31,7 @@ export const UserModal: React.FC<UserModalProps> = ({ modalVisible, setModalVisi
     } else {
       setUserInfo(undefined) 
     }
-    console.log(result)
+    //console.log(result)
   }
 
   const closeModal = () => {

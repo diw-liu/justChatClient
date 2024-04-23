@@ -35,6 +35,12 @@ export interface Friend {
   Status: string,
   FriendInfo: UserInfo,
   Messages: MessageConnection
+  isOnline: Presence
+}
+
+export interface Presence {
+  id?: string,
+  status: string
 }
 
 export interface FriendsResponse {

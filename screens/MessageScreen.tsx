@@ -10,16 +10,25 @@ interface MessageItem {
   roomId: string
   email: string
   name: string
+  isOnline: string
   navigation: any
 }
 
-const MessageItem: React.FC<MessageItem> = ({ id, roomId, name, email, navigation }) => (
+const MessageItem: React.FC<MessageItem> = ({ id, roomId, name, email, isOnline, navigation }) => (
   <TouchableOpacity 
-    onPress={() => navigation.navigate('MessageRoom', { id: id, roomId: roomId, name: name })}
+    onPress={() => navigation.navigate('MessageRoom', { id: id, roomId: roomId, name: name, isOnline: isOnline})}
     style={styles.messageItemContainer}
   >  
-    <Text >{name}</Text>
-    <Text >{email}</Text>
+    <View style={styles.infoContainer}>
+      <View style={[
+        styles.statusDot,
+        { backgroundColor: isOnline === 'online' ? 'green' : 'transparent', 
+          borderWidth: isOnline === 'online' ? 0 : 1,
+          borderColor: isOnline === 'online' ? 'green' : 'grey' }
+      ]} />
+      <Text style={styles.name}>{name}</Text>
+    </View>
+    <Text style={styles.email}>{email}</Text>
   </TouchableOpacity>
 );
 
@@ -54,13 +63,14 @@ const MessageScreen: React.FC = ({ navigation }) => {
       <FlatList
         data={Object.values(friends)}
         keyExtractor={(item) => item.FriendId}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <MessageItem
             id={item.FriendId}
             roomId = {item.RoomId}
             name={item.FriendInfo.UserName}
             email={item.FriendInfo.Email}
             navigation={navigation}
+            isOnline={item.isOnline.status}
           />
         )}
       />
@@ -109,20 +119,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   messageItemContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 5,
-    marginHorizontal: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    backgroundColor: '#fff'
   },
+  infoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexGrow: 1,
+  },
+  statusDot: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  name: {
+    fontSize: 16,
+    marginRight: 10
+  },
+  email: {
+    fontSize: 14,
+    color: '#666'
+  }
 });
 
 export default MessageScreen;

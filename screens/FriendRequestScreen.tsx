@@ -33,7 +33,7 @@ const FriendRequestScreen: React.FC = () => {
   const dispatch = useDispatch();
   
   const handleAccept = async (id) => {
-    console.log('Accepted request:', id);
+    //console.log('Accepted request:', id);
     dispatch(friendSlice.actions.setLoading());
     const result = await FriendService.approveFriend(id);
     if(result['Status'] == "200") {
@@ -44,7 +44,7 @@ const FriendRequestScreen: React.FC = () => {
   };
 
   const handleDeny = async (id) => {
-    console.log('Denied request:', id);
+    //console.log('Denied request:', id);
     dispatch(friendSlice.actions.setLoading());
     const result = await FriendService.disapproveFriend(id);
     if(result['Status'] == "200") {

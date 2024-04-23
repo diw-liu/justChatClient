@@ -1,9 +1,7 @@
-import { createSlice, isFulfilled, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { FriendService } from '../service/FriendService';
 import { Friend, Message, MessageConnection, MessageInfo } from '../interface';
-import { RootState } from './store';
-import { MessageService } from '../service/MessageService';
 
 export const fetchFriends = createAsyncThunk(
   'friends/fetchFriends',
@@ -12,25 +10,6 @@ export const fetchFriends = createAsyncThunk(
   }
 );
 
-// export const fetchMessages = createAsyncThunk(
-//   'friends/fetchMessages',
-//   async (roomId: string, nextToken: string) => {
-//     return await MessageService.fetchMessage(roomId, nextToken)
-//   }
-// );
-
-
-// export const subscribeMessage = createAsyncThunk(
-//   'friends/subscribeMessage',
-//   async (roomId: string, nextToken: string, thunkAPI) => {
-//     console.log('inside subsMessage')
-//     const rooms = (thunkAPI.getState() as RootState).friends.rooms;
-//     console.log(roomId)
-//     console.log(Object.keys(nextToken))
-//     return await MessageService.subscribeMessage(Object.keys(rooms))
-//   }
-// )
-
 interface FriendState {
   friends: {[key: string]: Friend}
   requests: {[key: string]: Friend}
@@ -38,11 +17,6 @@ interface FriendState {
   status: string
   error: string
 }
-
-// interface MessageInput {
-//   message: Message,
-//   roomId: string
-// }
 
 const initialState: FriendState = {
   friends: {},
@@ -76,24 +50,6 @@ export const friendSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      // .addCase(fetchMessages.pending, (state, action) => {
-      //   state.status = 'loading';
-      // })
-      // .addCase(fetchMessages.fulfilled, (state, action) => {
-      //   state.status = 'succeeded';
-      //   action.payload.forEach(friend => {
-      //     if(friend.Status == "FRIENDS") {
-      //       state.friends[friend.FriendId] = friend;
-      //       state.rooms[friend.RoomId] = friend.Messages;
-      //     } else { 
-      //       state.requests[friend.FriendId] = friend;
-      //     }
-      //   });
-      // })
-      // .addCase(fetchMessages.rejected, (state, action) => {
-      //   state.status = 'failed';
-      //   state.error = action.error.message;
-      // })
   },
   reducers: {
     setLoading: (state) => {
@@ -137,6 +93,12 @@ export const friendSlice = createSlice({
       const {roomId, result} = action.payload;
       state.rooms[roomId].items = [...result.items.reverse(), ...state.rooms[roomId].items, ];
       state.rooms[roomId].nextToken = result.nextToken;
+    },
+    updateStatus: (state, action: PayloadAction<{id: string, status: string}>) => {
+      ////console.log("status updated")
+      const {id, status} = action.payload
+      state.friends[id].isOnline.status = status
+      ////console.log(state.friends[id])
     }
   }
 })

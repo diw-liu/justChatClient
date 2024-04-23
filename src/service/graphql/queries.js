@@ -24,6 +24,9 @@ export const getFriends = `query GetFriends {
       }
       nextToken
     }
+    isOnline {
+      status
+    }
   }
 }`;
 
